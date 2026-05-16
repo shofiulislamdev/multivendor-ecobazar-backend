@@ -42,10 +42,13 @@ const userSchema = new Schema({
         default: false
     },
 
-    refreshToken: [{
+    refreshTokens: [{
         token: String,
         createdAt: {
             type: Date, default: Date.now
+        },
+        expiresAt: {
+            type: Date
         }
     }],
 

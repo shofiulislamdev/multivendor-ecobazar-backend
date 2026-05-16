@@ -96,3 +96,73 @@ exports.register = async (req, res) => {
         })
     }
 }
+
+
+exports.login = async (req, res) => {
+    try {
+        const { email, password } = req.body
+        if (!email || !password) {
+            return res.status(400).json({ success: false, message: 'Email and Password required' })
+        }
+
+        // Find user and select password
+        const user = await User.findOne({ email }).select('+password')
+        if (!user) {
+            return res.status(401).json({ success: false, message: 'Invalid credentials' })
+        }
+
+        const isMatch = await user.comparePassword(password)
+        if (!isMatch) {
+            return res.status(401).json({ success: false, message: 'Invalid credentials' })
+        }
+
+        // Generate tokens
+        const accessToken = jwt.sign(
+            { id: user._id, role: user.role, email: user.email },
+            process.env.JWT_ACCESS_SECRET,
+            { expiresIn: process.env.ACCESS_TOKEN_EXPIRY }
+        )
+
+        const refreshToken = jwt.sign(
+            { id: user._id },
+            process.env.JWT_REFRESH_SECRET,
+            { expiresIn: process.env.REFRESH_TOKEN_EXPIRY }
+        )
+
+        // Save refresh token to user 
+        user.refreshTokens.push({
+            token: refreshToken,
+            createdAt: new Date(),
+            // expiresAt: new Date(Date.now() + 7*24*60*60*1000)
+        })
+
+        await user.save()
+
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            samSite: 'strict',
+            maxAge: 7*24*60*60*1000,
+            path: '/'
+        })
+
+        res.status(200).json({
+            success: true,
+            message: 'Login successful',
+            accesstoken,
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                isEmailVerified: user.isEmailVerified
+            }
+
+        })
+
+
+    } catch (error) {
+        console.log('Login Error: ', error)
+        res.status(500).json({success: false, message: 'Server Error'})
+    }
+}
