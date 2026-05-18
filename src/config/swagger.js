@@ -1,7 +1,7 @@
 const swaggerJsdoc = require('swagger-jsdoc')
 
 const options = {
-    defination: {
+    definition: {
         openapi: '3.0.0',
         info: {
             title: 'Multivendor Ecommerce API',
