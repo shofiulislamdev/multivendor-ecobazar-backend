@@ -2,6 +2,8 @@ const express = require('express')
 const router = express.Router()
 const { register, login, refreshToken } = require('../controllers/authController')
 const { verifyEmail } = require('../controllers/verifyEmail')
+const validate = require('../middlewares/validate')
+const { registrationSchema, loginSchema } = require('../validations/auth.validation')
 // const { protect, restrictTo } = require('../middlewares/auth')
 
 /**
@@ -37,8 +39,8 @@ const { verifyEmail } = require('../controllers/verifyEmail')
  *          400:
  *              description: Bad Request
  */
-router.post('/register', register)
-router.get('/verify-email', verifyEmail)
+router.post('/register', validate(registrationSchema), register)
+router.get('/verify-email', validate(loginSchema), verifyEmail)
 router.post('/login', login)
 router.post('/refresh-token', refreshToken)
 
