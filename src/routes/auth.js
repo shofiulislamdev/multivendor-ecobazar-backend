@@ -4,6 +4,7 @@ const { register, login, refreshToken } = require('../controllers/authController
 const { verifyEmail } = require('../controllers/verifyEmail')
 const validate = require('../middlewares/validate')
 const { registrationSchema, loginSchema } = require('../validations/auth.validation')
+const { registerLimiter, loginLimiter, refreshLimiter } = require('../middlewares/rateLimiter')
 // const { protect, restrictTo } = require('../middlewares/auth')
 
 /**
@@ -39,9 +40,9 @@ const { registrationSchema, loginSchema } = require('../validations/auth.validat
  *          400:
  *              description: Bad Request
  */
-router.post('/register', validate(registrationSchema), register)
+router.post('/register', registerLimiter, validate(registrationSchema), register)
 router.get('/verify-email', validate(loginSchema), verifyEmail)
-router.post('/login', login)
-router.post('/refresh-token', refreshToken)
+router.post('/login', loginLimiter, login)
+router.post('/refresh-token', refreshLimiter, refreshToken)
 
 module.exports = router
