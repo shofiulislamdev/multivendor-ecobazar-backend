@@ -141,7 +141,7 @@ exports.login = async (req, res) => {
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            samSite: 'strict',
+            sameSite: 'strict',
             maxAge: 7 * 24 * 60 * 60 * 1000,
             path: '/'
         })
@@ -244,5 +244,38 @@ exports.logout = async (req, res) => {
 
     } catch (error) {
         res.status(500).json({ message: 'Server Error During Logout' })
+    }
+}
+
+
+exports.logoutAll = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id)
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' })
+        }
+
+        // user er moddhe je refreshTokens ache oita ke faka array banai dilam, all refreshTokens remove kore dilam
+
+        user.refreshTokens = []
+        await user.save()
+
+        // Clear Cookie
+
+        res.clearCookie('refreshToken', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV == 'production',
+            sameSite: 'strict'
+        })
+
+        res.status(200).json({
+            success: true,
+            message: 'Logged out From all devices'
+        })
+
+
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error During Logout From All Devices' })
     }
 }
