@@ -43,7 +43,29 @@ const loginSchema = z.object({
         .regex(/[^a-zA-Z0-9]/, { message: 'Must contain at least one special character' }),
 })
 
+
+const vendorValidationSchema = z.object({
+    name: z.string().min(2).max(50).trim(),
+    email: z.string().email().toLowerCase().trim(),
+    password: z.string().min(8).regex(/[a-z]/).regex(/[A-Z]/).regex(/[0-9]/).regex(/[^a-zA-Z0-9]/),
+    phone: z.string().regex(/^\+?8801[3-9]\d{8}$/).optional(),
+
+    // vendor specific
+    shopName: z.string().min(3, { message: 'Shop name must be at least 3 characters' }).max(100).trim(),
+    shopDescription: z.string().max(1000).trim(),
+    shopAddress: z.string().min(10).max(100).trim(),
+    nidNumber: z.string().min(10).max(17).trim(),
+    bankInfo: {
+        bankName: z.string().min(2).max(300).trim(),
+        branchName: z.string().min(2).max(100).trim(),
+        accountNumber: z.string().min(10).trim(),
+        accountHolder: z.string().min(2).max(100).trim()
+    }
+})
+
+
 module.exports = {
     registrationSchema,
-    loginSchema
+    loginSchema,
+    vendorValidationSchema
 }

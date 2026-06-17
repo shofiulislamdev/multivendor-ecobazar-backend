@@ -7,6 +7,7 @@ const cookieParser = require('cookie-parser')
 const authRoutes = require('./routes/auth')
 const swaggerUi = require('swagger-ui-express')
 const swaggerSpecs = require('./config/swagger')
+const { apiLimiter } = require('./middlewares/rateLimiter')
 
 const app = express()
 
@@ -20,6 +21,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs))
 app.use(cookieParser())
 
 // Routes 
+app.use('/api/v1', apiLimiter)
 app.use('/api/v1/auth', authRoutes)
 
 //MongoDB connection

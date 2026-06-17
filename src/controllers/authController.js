@@ -279,3 +279,57 @@ exports.logoutAll = async (req, res) => {
         res.status(500).json({ message: 'Server Error During Logout From All Devices' })
     }
 }
+
+
+exports.registerVendor = async (req, res) => {
+    try {
+        const validateData = req.body
+        const { name, email, password, phone, shopName, shopDescription, shopAddress, nidNumber, bankInfo } = validateData
+
+        // check duplicate
+        const existingUser = User.findOne({ email })
+        if (existingUser) {
+            return res.status(409).json({ message: 'Email already registered, You are a vendor already please login as vendor' })
+        }
+
+        // Check duplicate NID
+        if (nidNumber) {
+            const existingNID = User.findOne({ nidNumber })
+            if (existingNID) {
+                return res.status(409).json({ message: 'NID already registered, You are a vendor already please login as vendor' })
+            }
+        }
+
+        const user = new User({
+            name: name,
+            email: email,
+            password: password,
+            phone: phone,
+            role: 'vendor',
+            shopName: shopName,
+            shopDescription: shopDescription,
+            shopAddress: shopAddress,
+            nidNumber: nidNumber,
+            bankInfo: bankInfo,
+            status: 'pending' // auto set by pre-save
+        })
+
+        await user.save()
+        res.status(200).json({
+            success: true,
+            message: 'Vendor Registered Successfully',
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                status: user.status
+            }
+        })
+
+
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ message: 'Server Error' })
+    }
+}
